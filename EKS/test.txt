@@ -1,0 +1,101 @@
+$ kubectl version | grep Client | cut -d : -f 5
+The connection to the server localhost:8080 was refused - did you specify the right host or port?
+"v1.23.7-eks-4721010", GitCommit
+$ eksctl version
+bash: eksctl: command not found
+$ curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+$ sudo mv /tmp/eksctl /usr/local/bin
+$ eksctl version
+0.123.0
+$ eksctl create cluster --name my-cluster --region us-east-2 --fargate
+...
+2022-12-20 02:18:22 [✔]  EKS cluster "my-cluster" in "us-east-2" region is ready
+
+$ kubectl get pods -A -o wide
+
+NAMESPACE     NAME                      READY   STATUS    RESTARTS   AGE   IP               NODE                                                   NOMINATED NODE   READINESS GATES
+kube-system   coredns-f87699c57-82h76   1/1     Running   0          12m   192.168.137.41   fargate-ip-192-168-137-41.us-east-2.compute.internal   <none>           <none>
+kube-system   coredns-f87699c57-n9wwx   1/1     Running   0          12m   192.168.150.23   fargate-ip-192-168-150-23.us-east-2.compute.internal   <none>           <none>
+
+$ kubectl get pods,svc,ingress
+NAME                 TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+service/kubernetes   ClusterIP   10.100.0.1   <none>        443/TCP   23m
+
+$ kubectl create namespace eks-sample-app
+$ vi eks-sample-app.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eks-sample-linux-deployment
+  namespace: eks-sample-app
+  labels:
+    app: eks-sample-linux-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: eks-sample-linux-app
+  template:
+    metadata:
+      labels:
+        app: eks-sample-linux-app
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/arch
+                operator: In
+                values:
+                - amd64
+                - arm64
+      containers:
+      - name: nginx
+        image: public.ecr.aws/nginx/nginx:1.21
+        ports:
+        - name: http
+          containerPort: 80
+        imagePullPolicy: IfNotPresent
+      nodeSelector:
+        kubernetes.io/os: linux
+
+$ kubectl apply -f eks-sample-deployment.yaml
+deployment.apps/eks-sample-linux-deployment created
+
+$ vi eks-sample-service.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: eks-sample-linux-service
+  namespace: eks-sample-app
+  labels:
+    app: eks-sample-linux-app
+spec:
+  selector:
+    app: eks-sample-linux-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+
+$ kubectl apply -f eks-sample-service.yaml
+service/eks-sample-linux-service create
+
+$ kubectl get all -n eks-sample-app
+
+NAME                                               READY   STATUS    RESTARTS   AGE
+pod/eks-sample-linux-deployment-764959fd66-bgztx   0/1     Pending   0          10m
+pod/eks-sample-linux-deployment-764959fd66-ffqjj   0/1     Pending   0          10m
+pod/eks-sample-linux-deployment-764959fd66-mzw8l   0/1     Pending   0          10m
+
+NAME                               TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)   AGE
+service/eks-sample-linux-service   ClusterIP   10.100.163.149   <none>        80/TCP    44s
+
+NAME                                          READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/eks-sample-linux-deployment   0/3     3            0           10m
+
+NAME                                                     DESIRED   CURRENT   READY   AGE
+replicaset.apps/eks-sample-linux-deployment-764959fd66   3         3         0       10m
