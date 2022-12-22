@@ -9,8 +9,7 @@ phases:
       - mv ./kubectl /usr/local/bin/kubectl
       - mkdir ~/.kube
       - aws eks update-kubeconfig --region us-east-2 --name eks-cicd-test --role-arn arn:aws:iam::896298274576:role/myAmazonEKSClusterRole
-      - kubectl get svc
-      - kubectl get po -n kube-system
+      - aws --version
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
