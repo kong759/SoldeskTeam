@@ -8,7 +8,7 @@ phases:
       - chmod +x ./kubectl
       - mv ./kubectl /usr/local/bin/kubectl
       - mkdir ~/.kube
-      - aws eks --region us-east-2 update-kubeconfig --name eks-cicd-test
+      - aws eks --region ap-northeast-2 update-kubeconfig --name eks-cicd-test
       - kubectl get po -n kube-system
   pre_build:
     commands:
