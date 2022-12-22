@@ -10,6 +10,7 @@ phases:
       - mkdir ~/.kube
       - aws eks update-kubeconfig --region us-east-2 --name eks-cicd-test --role-arn arn:aws:iam::896298274576:role/myAmazonEKSClusterRole
       - aws --version
+      - ls
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
