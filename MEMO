@@ -1,12 +1,12 @@
-1.터미널에서 모니터링
+# 1.터미널에서 모니터링
 
 watch -d 'kubectl get deploy,pods,svc,ep,rs -o wide'  
 
-2.httpd  이미지로  web  pod를 만들어보자
+# 2.httpd  이미지로  web  pod를 만들어보자
 
 kubectl expose deployment front-apache --port=80 --type=LoadBalancer
 
-3.디플로이먼트 ,replicaset , pos 가 생성된다.
+# 3.디플로이먼트 ,replicaset , pos 가 생성된다.
 
 디플로이먼트
 
@@ -18,23 +18,23 @@ Pod
 
 엔드포인트 / 쿠버네티스 
 
-4.서비스 생성 Pod를 외부에 노출하기 위한 부분 (LB)
+# 4.서비스 생성 Pod를 외부에 노출하기 위한 부분 (LB)
 
 kubectl expose deployment front-apache --port=80 --type=LoadBalancer
 service/front-apache  LoadBalancer  
 
 endpoints/front-apache 1개가 생긴다
 
-5.서비스 도메인에 대해 DNS 질의해 본다.
+# 5.서비스 도메인에 대해 DNS 질의해 본다.
 dig ab202f34b03b04d69b09ab43c3360c26-1766904069.us-east-1.elb.amazonaws.com +short
 
-6.웹 접속 - 웹 브라우저에서 External-IP 로 접속
+# 6.웹 접속 - 웹 브라우저에서 External-IP 로 접속
 http://ab202f34b03b04d69b09ab43c3360c26-1766904069.us-east-1.elb.amazonaws.com
 
-7.SVC 확인
+# 7.SVC 확인
 kubectl get svc
 
-8.서비스 정보 확인
+# 8.서비스 정보 확인
 
 kubectl describe svc websrv
 
