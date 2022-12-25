@@ -1,4 +1,4 @@
-# 1.터미널에서 모니터링
+## 1.터미널에서 모니터링
 
 watch -d 'kubectl get deploy,pods,svc,ep,rs -o wide'  
 
