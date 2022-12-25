@@ -5,7 +5,7 @@ watch -d 'kubectl get deploy,pods,svc,ep,rs -o wide'
 # 2.httpd  이미지로  web  pod를 만들어보자
 
 kubectl expose deployment front-apache --port=80 --type=LoadBalancer
-
+# SoldeskTeam
 # 3.디플로이먼트 ,replicaset , pos 가 생성된다.
 
 디플로이먼트
