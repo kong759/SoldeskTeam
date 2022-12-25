@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: front-web
+  name: front-apache
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: front-web
+  template:
+    metadata:
+      labels:
+        app: front-web
+    spec:
+      containers:
+      - name: front-web
+        image: ksw7734/httpd:7
+        ports:
+          - containerPort: 80
