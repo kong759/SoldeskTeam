@@ -1,0 +1,13 @@
+### Base Image 지정    
+FROM mysql:5.7
+
+
+# Mysql 환경설정
+ENV MYSQL_ROOT_PASSWORD soldesk1.
+
+#DB Dump
+COPY project_coffee.sql /docker-entrypoint-initdb.d/
+RUN chown -R mysql:mysql /docker-entrypoint-initdb.d/
+
+### 서비스 포
+EXPOSE 3306

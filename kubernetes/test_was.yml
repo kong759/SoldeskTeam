@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: was-server
+  name: was-server
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: was-server
+  template:
+    metadata:
+      labels:
+        app: was-server
+    spec:
+      containers:
+      - name: was-server
+        image: 018374338799.dkr.ecr.us-east-1.amazonaws.com/demo-backend:latest
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 8080

@@ -1,0 +1,17 @@
+FROM httpd:2.4
+
+RUN sed -i \
+                -e 's/^#\(LoadModule .*mod_proxy.so\)/\1/' \
+                -e 's/^#\(LoadModule .*mod_proxy_http.so\)/\1/' \
+                -e 's/^#\(LoadModule .*mod_jk.so\)/\1/' \
+                conf/httpd.conf
+
+RUN set -x \
+&& echo "\
+ <VirtualHost *:80>\n\
+        ServerName localhost \n\
+        ProxyRequests Off \n\
+        ProxyPreserveHost On \n\
+        ProxyPass / http://tomcat-svc.default.svc.cluster.local:8080/ \n\
+        ProxyPassReverse / http://tomcat-svc.default.svc.cluster.local::8080/ \n\
+ </VirtualHost> " >> conf/httpd.conf \

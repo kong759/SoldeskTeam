@@ -1,0 +1,96 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      docker: 19
+      java: corretto11
+    commands:
+      # Packaging test
+      - echo Was source packing
+      - jar cvf test.war tomcat/webapps/* 
+      - mv test.war tomcat/target/          
+      - echo ---------------------------------
+      - echo ENV Values
+      - echo ---------------------------------
+      - echo $AWS_DEFAULT_REGION
+      - echo $AWS_ACCOUNT_ID
+      - echo $IMAGE_TAG
+      - echo $CODEBUILD_BUILD_NUMBER
+      - echo ---------------------------------
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 018374338799.dkr.ecr.us-east-1.amazonaws.com
+ #  pre_build:
+ #    commands: 
+ #      # sleep test
+ #      - echo ---------------------------------
+ #      - echo Pulling HTTP Docker image...
+ #      - echo ---------------------------------
+ #      - sleep 5
+ #      - docker pull httpd:2.4
+ #      - echo ---------------------------------
+ #      - echo Pulling Tomcat Docker image...
+ #      - echo ---------------------------------
+ #      - sleep 5
+ #      - docker pull tomcat:9.0
+ #
+  build:
+     commands:
+      - echo Build started on `date`
+      - echo Application Build
+      - echo ---------------------------------
+      - echo GO Build Start
+      - echo Go Build Code In here
+      - echo GO Build Stop
+      - echo ---------------------------------
+      - echo Start Docker
+      - docker version
+      - echo ---------------------------------
+      - echo Building the Docker image...
+      - echo ---------------------------------
+      ############################### httpd build
+      - docker build -t ksw7734/httpd:$IMAGE_TAG httpd/.
+      - docker tag ksw7734/httpd:$IMAGE_TAG $REPO_FRONT_ECR:front-$CODEBUILD_BUILD_NUMBER
+      - docker tag ksw7734/httpd:$IMAGE_TAG $REPO_FRONT_ECR:latest
+      - echo ksw7734/httpd:$IMAGE_TAG $REPO_FRONT_ECR:front-$CODEBUILD_BUILD_NUMBER
+
+      - sleep 5
+      ################################ tomcat build
+      - docker build -t ksw7734/tomcat:$IMAGE_TAG tomcat/.
+      - docker tag ksw7734/tomcat:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/demo-backend:backend-$CODEBUILD_BUILD_NUMBER
+      - docker tag ksw7734/tomcat:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/demo-backend:latest
+      - echo ksw7734/tomcat:$IMAGE_TAG $REPO_BACK_ECR:backend-$CODEBUILD_BUILD_NUMBER
+
+      - sleep 5
+      ################################ mysql build
+      - docker build -t ksw7734/mysql:$IMAGE_TAG mysql/.
+      - docker tag ksw7734/mysql:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/demo-mysql:mysql-$CODEBUILD_BUILD_NUMBER
+      - docker tag ksw7734/mysql:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/demo-mysql:latest
+      - echo ksw7734/mysql:$IMAGE_TAG $REPO_MYSQL_ECR:backend-$CODEBUILD_BUILD_NUMBER
+
+  post_build:
+    commands:
+      # httpd push
+      - echo ---------------------------------
+      - echo Pushing the httpd Docker image...
+      - echo ---------------------------------
+      - echo $REPO_FRONT_ECR:front-$CODEBUILD_BUILD_NUMBER push
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/demo-frontend:front-$CODEBUILD_BUILD_NUMBER
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/demo-frontend:latest
+        # tomcat push
+      - echo ---------------------------------
+      - echo Pushing the tomcat Docker image...
+      - echo ---------------------------------
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/demo-backend:backend-$CODEBUILD_BUILD_NUMBER
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/demo-backend:latest
+        ##mysql push
+      - echo ---------------------------------
+      - echo Pushing the mysql Docker image...
+      - echo ---------------------------------
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/demo-mysql:mysql-$CODEBUILD_BUILD_NUMBER
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/demo-mysql:latest
+
+      #- AWS_FRONT_ECR=$REPO_FRONT_ECR:front-$CODEBUILD_BUILD_NUMBER 
+      - DATE=`date`
+      - echo Build completed on $DATE
+      
